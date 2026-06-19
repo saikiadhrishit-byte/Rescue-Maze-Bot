@@ -18,15 +18,34 @@ public:
   void maintainCenter(int speed = 130)
   {
     rangeFinder.update();
-    float left = static_cast<float>(rangeFinder.distance(SIDE_LEFT));
-    float right = static_cast<float>(rangeFinder.distance(SIDE_RIGHT));
-    if (!rangeFinder.isClear(SIDE_LEFT, WALL_THRESHOLD_MM) || !rangeFinder.isClear(SIDE_RIGHT, WALL_THRESHOLD_MM))
+    const ToFMeasurements &measurements = rangeFinder.getMeasurements();
+    bool leftValid = measurements.valid[SIDE_LEFT];
+    bool rightValid = measurements.valid[SIDE_RIGHT];
+    float left = leftValid ? static_cast<float>(measurements.distances[SIDE_LEFT]) : 0.0f;
+    float right = rightValid ? static_cast<float>(measurements.distances[SIDE_RIGHT]) : 0.0f;
+    bool leftWall = leftValid && left < WALL_THRESHOLD_MM;
+    bool rightWall = rightValid && right < WALL_THRESHOLD_MM;
+
+    if (!leftWall && !rightWall)
     {
       drive.setMotorPower(speed, speed);
       return;
     }
 
-    float error = left - right;
+    float error = 0.0f;
+    if (leftWall && rightWall)
+    {
+      error = right - left;
+    }
+    else if (leftWall)
+    {
+      error = left - WALL_THRESHOLD_MM;
+    }
+    else if (rightWall)
+    {
+      error = right - WALL_THRESHOLD_MM;
+    }
+
     input = error;
     pid.Compute();
     int correction = static_cast<int>(output);

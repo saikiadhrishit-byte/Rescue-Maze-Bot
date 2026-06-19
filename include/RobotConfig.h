@@ -61,12 +61,15 @@ constexpr uint8_t PIN_BNO085_INT = 30; // BNO085 interrupt (can be any free inte
 constexpr uint8_t PIN_TCRT_LEFT = A0;
 constexpr uint8_t PIN_TCRT_RIGHT = A1;
 constexpr uint8_t PIN_TCS34725_INT = A2;
+constexpr uint8_t PIN_BATTERY_SENSE = A9; // Battery voltage sensing pin
 
 // LEDs and buzzer
 constexpr uint8_t PIN_BLUE_LED = 11;
+constexpr uint8_t PIN_LED_GREEN = 33; // External Green LED
+constexpr uint8_t PIN_LED_RED = 34;   // External Red LED
 constexpr uint8_t PIN_BUZZER = 10;
 
-// VL53L1X reset pins for multiple sensors (non-conflicting pins)
+// VL53L1X reset pins for multiple sensors (non-conflicting pins, kept for hardware flexibility)
 constexpr uint8_t PIN_VL53_RESET_PINS[5] = {24, 25, 26, 27, 28};
 constexpr uint8_t VL53_ADDRESS[5] = {0x30, 0x31, 0x32, 0x33, 0x34};
 
@@ -78,7 +81,22 @@ constexpr float WHEEL_CIRCUMFERENCE_MM = WHEEL_DIAMETER_MM * PI;
 constexpr float DISTANCE_PER_TICK_MM = WHEEL_CIRCUMFERENCE_MM / ENCODER_TICKS_PER_REV;
 constexpr float CELL_SIZE_MM = 300.0f;
 
-constexpr uint8_t MAX_MAP_NODES = 32;
+// Maze boundaries (Rescue Maze Arena is max ~6x4 cells, we configure a safe 10x10 grid)
+constexpr uint8_t GRID_WIDTH = 10;
+constexpr uint8_t GRID_HEIGHT = 10;
+constexpr uint8_t MAX_MAP_NODES = GRID_WIDTH * GRID_HEIGHT;
+
 constexpr uint16_t MAX_SENSOR_DISTANCE_MM = 1200;
 constexpr uint16_t JUNCTION_THRESHOLD_MM = 260;
 constexpr uint16_t WALL_THRESHOLD_MM = 220;
+
+// Safety & voltage check constants
+constexpr float BATTERY_MIN_VOLTAGE = 6.8f;      // Safe lower limit for 2S LiPo (3.4V per cell)
+constexpr float BATTERY_CRITICAL_VOLTAGE = 6.4f; // Critical threshold to immediately stop motors
+constexpr float BATTERY_DIVIDER_RATIO = 2.0f;    // Resistor divider factor (e.g. 10k/10k ratio = 2.0)
+constexpr float ADC_REF_VOLTAGE = 3.3f;          // ADC reference on Teensy 4.1
+constexpr float ADC_RESOLUTION_MAX = 1023.0f;    // Teensy 10-bit analog read default
+
+// Calibration constants
+constexpr uint16_t TCRT_BLACK_THRESHOLD = 500;  // Analog reading below this indicates black tile
+constexpr uint16_t TCRT_SILVER_THRESHOLD = 900; // Analog reading above this indicates silver checkpoint

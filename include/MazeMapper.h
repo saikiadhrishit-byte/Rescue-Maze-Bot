@@ -36,6 +36,10 @@ public:
   void reset();
   int findNode(int8_t x, int8_t y) const;
   int addOrUpdateNode(const RobotPose &pose, const bool open[4]);
+  bool isOpen(int nodeId, Direction dir) const;
+  bool isVisited(int nodeId) const;
+  void markVisited(int nodeId);
+  int getNeighbor(int nodeId, Direction dir) const;
   void recordJunction(const RobotPose &pose, const bool open[4]);
   void setTileColor(int nodeId, TileColor color);
   void setEdgeOpen(int nodeId, Direction dir, bool isOpen);
