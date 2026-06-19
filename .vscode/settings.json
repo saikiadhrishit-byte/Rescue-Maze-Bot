@@ -1,0 +1,39 @@
+{
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:PATH};${env:USERPROFILE}\\.platformio\\penv\\Scripts"
+  },
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/include",
+    "${workspaceFolder}/src",
+    "${workspaceFolder}/.pio/libdeps/teensy41/Adafruit BusIO",
+    "${workspaceFolder}/.pio/libdeps/teensy41/Adafruit TCS34725",
+    "${workspaceFolder}/.pio/libdeps/teensy41/Encoder",
+    "${workspaceFolder}/.pio/libdeps/teensy41/PID",
+    "${workspaceFolder}/.pio/libdeps/teensy41/VL53L1X",
+    "${workspaceFolder}/.pio/libdeps/teensy41/SparkFun BNO08x Cortex Based IMU/src",
+    "${workspaceFolder}/.platformio/packages/framework-arduinoteensy/cores/teensy4",
+    "${workspaceFolder}/.platformio/packages/framework-arduinoteensy/libraries/Wire",
+    "${workspaceFolder}/.platformio/packages/framework-arduinoteensy/libraries/SPI"
+  ],
+  "C_Cpp.default.browse.path": [
+    "${workspaceFolder}/include",
+    "${workspaceFolder}/src",
+    "${workspaceFolder}/.pio/libdeps/teensy41/Adafruit BusIO",
+    "${workspaceFolder}/.pio/libdeps/teensy41/Adafruit TCS34725",
+    "${workspaceFolder}/.pio/libdeps/teensy41/Encoder",
+    "${workspaceFolder}/.pio/libdeps/teensy41/PID",
+    "${workspaceFolder}/.pio/libdeps/teensy41/VL53L1X",
+    "${workspaceFolder}/.pio/libdeps/teensy41/SparkFun BNO08x Cortex Based IMU/src",
+    "${workspaceFolder}/.platformio/packages/framework-arduinoteensy/cores/teensy4",
+    "${workspaceFolder}/.platformio/packages/framework-arduinoteensy/libraries/Wire",
+    "${workspaceFolder}/.platformio/packages/framework-arduinoteensy/libraries/SPI"
+  ],
+  "C_Cpp.default.compilerPath": "${env:USERPROFILE}\\.platformio\\packages\\toolchain-gccarmnoneeabi-teensy\\bin\\arm-none-eabi-g++.exe",
+  "C_Cpp.default.cppStandard": "c++17",
+  "C_Cpp.default.defines": [
+    "ARDUINO=10805",
+    "ARDUINO_TEENSY41",
+    "__IMXRT1062__",
+    "ARDUINO_ARCH_TEENSY"
+  ]
+}
