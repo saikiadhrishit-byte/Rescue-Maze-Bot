@@ -90,6 +90,12 @@ constexpr uint16_t MAX_SENSOR_DISTANCE_MM = 1200;
 constexpr uint16_t JUNCTION_THRESHOLD_MM = 260;
 constexpr uint16_t WALL_THRESHOLD_MM = 220;
 
+// Motion parameters for speed ramping and stiction compensation
+constexpr int MIN_DRIVE_POWER = 35;          // Minimum PWM to prevent stall during straight drive deceleration
+constexpr int MIN_TURN_POWER = 55;           // Minimum PWM to overcome pivot turn static friction
+constexpr float DECEL_START_TICKS = 500.0f;  // Remaining ticks at which straight drive starts deceleration
+
+
 // Safety & voltage check constants
 constexpr float BATTERY_MIN_VOLTAGE = 6.8f;      // Safe lower limit for 2S LiPo (3.4V per cell)
 constexpr float BATTERY_CRITICAL_VOLTAGE = 6.4f; // Critical threshold to immediately stop motors

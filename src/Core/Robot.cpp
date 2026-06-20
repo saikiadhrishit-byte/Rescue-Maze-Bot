@@ -348,16 +348,20 @@ void Robot::handleMoveForward()
 {
   drive.update();
 
-  // Apply non-blocking PID wall-following alignment
-  if (drive.getMotionState() == Motion::MotionType::MovingForward)
+  // Apply non-blocking PID wall-following alignment (only if moving forward, not reversing)
+  if (drive.getMotionState() == Motion::MotionType::MovingForward && drive.getDirectionSign() > 0.0f)
   {
     bool hasWall = false;
     double corr = wallFollower.computeCorrection(hasWall);
     drive.setHeadingCorrection(hasWall ? corr : 0.0);
   }
+  else
+  {
+    drive.setHeadingCorrection(0.0);
+  }
 
-  // Check for black tile edge safety during forward drive
-  if (floor.isBlackTile())
+  // Check for black tile edge safety during forward drive (only when moving forward, not reversing)
+  if (drive.getDirectionSign() > 0.0f && floor.isBlackTile())
   {
     Serial.println("Line safety: black line triggered. Stopping and reversing.");
     ui.beep(300, 1000);
@@ -393,7 +397,6 @@ void Robot::handleTurn()
     drive.stopImmediate();
     
     // Once turn is done, move forward immediately into nextCell
-    Navigation::Pose pose = poseEstimator.getPose();
     drive.startMoveForward(CELL_SIZE_MM, 130);
     state = RobotState::MoveForward;
   }
@@ -459,12 +462,16 @@ void Robot::handleShortestPathReturn()
 {
   drive.update();
 
-  // Active PID wall following alignment on straight segments
-  if (drive.getMotionState() == Motion::MotionType::MovingForward)
+  // Active PID wall following alignment on straight segments (only if moving forward, not reversing)
+  if (drive.getMotionState() == Motion::MotionType::MovingForward && drive.getDirectionSign() > 0.0f)
   {
     bool hasWall = false;
     double corr = wallFollower.computeCorrection(hasWall);
     drive.setHeadingCorrection(hasWall ? corr : 0.0);
+  }
+  else
+  {
+    drive.setHeadingCorrection(0.0);
   }
 
   if (drive.isMotionComplete())

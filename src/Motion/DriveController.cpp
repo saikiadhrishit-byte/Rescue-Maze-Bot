@@ -7,7 +7,7 @@ DriveController::DriveController(Hardware::Motors &motors, Hardware::Encoders &e
     : motors(motors), encoders(encoders), imu(imu),
       motionState(MotionType::Idle),
       targetHeading(0.0f), targetLeftTicks(0), targetRightTicks(0),
-      baseTargetSpeed(0), headingCorrection(0.0),
+      baseTargetSpeed(0), directionSign(1.0f), headingCorrection(0.0),
       headingPid(2.2, 0.05, 0.8), // Using the legacy tuned parameters
       speedProfiler(400.0f, 500.0f), // Accel/decel limits (ticks/s^2 equivalent)
       lastUpdateMs(0)
@@ -29,6 +29,7 @@ void DriveController::startMoveForward(float distanceMm, int targetSpeed)
   targetLeftTicks = abs(static_cast<int32_t>(distanceMm / DISTANCE_PER_TICK_MM));
   targetRightTicks = targetLeftTicks;
   baseTargetSpeed = targetSpeed;
+  directionSign = (distanceMm >= 0.0f) ? 1.0f : -1.0f;
   headingCorrection = 0.0;
 
   headingPid.reset();
@@ -47,6 +48,7 @@ void DriveController::startTurn(float relativeAngleDeg, int targetSpeed)
   targetLeftTicks = 0; // Turn completion is determined by heading
   targetRightTicks = 0;
   baseTargetSpeed = targetSpeed;
+  directionSign = 1.0f;
   headingCorrection = 0.0;
 
   headingPid.reset();
@@ -65,6 +67,7 @@ void DriveController::startTurnToHeading(float absoluteHeadingDeg, int targetSpe
   targetLeftTicks = 0;
   targetRightTicks = 0;
   baseTargetSpeed = targetSpeed;
+  directionSign = 1.0f;
   headingCorrection = 0.0;
 
   headingPid.reset();
@@ -115,18 +118,34 @@ void DriveController::update()
       return;
     }
 
-    // PID heading correction (setpoint = 0, input = -error)
-    double correction = headingPid.compute(-headingError);
+    // Speed ramping (Trapezoidal Ramping Down)
+    int32_t remainingLeft = targetLeftTicks - leftTicks;
+    int32_t remainingRight = targetRightTicks - rightTicks;
+    int32_t remainingTicks = min(remainingLeft, remainingRight);
 
-    // Apply external steering correction (e.g. wall following centering)
-    correction += headingCorrection;
+    float currentTargetSpeed = baseTargetSpeed;
+    if (remainingTicks < DECEL_START_TICKS && baseTargetSpeed > MIN_DRIVE_POWER)
+    {
+      float ratio = static_cast<float>(remainingTicks) / DECEL_START_TICKS;
+      currentTargetSpeed = MIN_DRIVE_POWER + ratio * (baseTargetSpeed - MIN_DRIVE_POWER);
+    }
 
     // Speed profiler ramps velocity to prevent slip
-    float profiledSpeed = speedProfiler.update(baseTargetSpeed, dtSec);
+    float profiledSpeed = speedProfiler.update(currentTargetSpeed, dtSec);
+    float speed = profiledSpeed * directionSign;
+
+    // PID heading correction (setpoint = 0, input = -error) corrected for direction
+    double correction = headingPid.compute(-headingError) * directionSign;
+
+    // Apply external steering correction (e.g. wall following centering) only if moving forward
+    if (directionSign > 0.0f)
+    {
+      correction += headingCorrection;
+    }
 
     // Apply differential drive skid steer outputs
-    int leftPower = static_cast<int>(profiledSpeed + correction);
-    int rightPower = static_cast<int>(profiledSpeed - correction);
+    int leftPower = static_cast<int>(speed + correction);
+    int rightPower = static_cast<int>(speed - correction);
 
     motors.setDrivePower(leftPower, rightPower);
   }
@@ -149,6 +168,12 @@ void DriveController::update()
     float profiledSpeed = speedProfiler.update(abs(correction), dtSec);
     int turnPower = static_cast<int>(profiledSpeed);
 
+    // Overcome static friction: ensure turnPower is at least MIN_TURN_POWER
+    if (turnPower < MIN_TURN_POWER)
+    {
+      turnPower = MIN_TURN_POWER;
+    }
+
     if (correction > 0)
     {
       // Turn right (left motor forward, right motor backward)
@@ -170,9 +195,10 @@ void DriveController::update()
     else
     {
       // Slow down in current heading
-      double correction = headingPid.compute(-headingError);
-      int leftPower = static_cast<int>(profiledSpeed + correction);
-      int rightPower = static_cast<int>(profiledSpeed - correction);
+      double correction = headingPid.compute(-headingError) * directionSign;
+      float speed = profiledSpeed * directionSign;
+      int leftPower = static_cast<int>(speed + correction);
+      int rightPower = static_cast<int>(speed - correction);
       motors.setDrivePower(leftPower, rightPower);
     }
   }

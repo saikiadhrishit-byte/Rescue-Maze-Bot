@@ -38,6 +38,7 @@ public:
 
   bool isMotionComplete() const { return motionState == MotionType::Idle; }
   MotionType getMotionState() const { return motionState; }
+  float getDirectionSign() const { return directionSign; }
 
 private:
   Hardware::Motors &motors;
@@ -50,6 +51,7 @@ private:
   int32_t targetLeftTicks;
   int32_t targetRightTicks;
   int baseTargetSpeed;
+  float directionSign; // 1.0 for forward, -1.0 for backward
   double headingCorrection; // Dynamic external steering offset
 
   PIDController headingPid;
